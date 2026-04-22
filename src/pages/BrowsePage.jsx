@@ -1,23 +1,15 @@
 import { useState } from 'react'
 import { Container, Row, Col, Form, InputGroup } from 'react-bootstrap'
 import ClubCard from '../components/ClubCard'
+import ClubDetailModal from '../components/ClubDetailModal'
 
-const CLUBS = [
-  { id: 1, name: 'Badger Robotics', category: 'Engineering', description: 'Build and compete with robots at regional and national competitions.', members: 142 },
-  { id: 2, name: 'UW Hiking Club', category: 'Outdoors', description: 'Weekly hikes around Madison and beyond. All skill levels welcome.', members: 89 },
-  { id: 3, name: 'Badger Debate', category: 'Academic', description: 'Sharpen your argumentation and compete in intercollegiate debate tournaments.', members: 54 },
-  { id: 4, name: 'CS + Social Good', category: 'Tech', description: 'Use technology to tackle social issues through projects and community outreach.', members: 73 },
-  { id: 5, name: 'Salsa Dance Club', category: 'Arts', description: 'Learn salsa and Latin dance styles from beginner to advanced levels.', members: 110 },
-  { id: 6, name: 'Badger Entrepreneurs', category: 'Business', description: 'Connect with founders, pitch ideas, and grow your startup on campus.', members: 201 },
-]
-
-function BrowsePage() {
+function BrowsePage({ clubs, joinedIds, onToggleJoin }) {
   const [search, setSearch] = useState('')
+  const [selectedClub, setSelectedClub] = useState(null)
 
-  const filtered = CLUBS.filter(
-    (c) =>
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.category.toLowerCase().includes(search.toLowerCase())
+  const filtered = clubs.filter(c =>
+    c.name.toLowerCase().includes(search.toLowerCase()) ||
+    c.category.toLowerCase().includes(search.toLowerCase())
   )
 
   return (
@@ -38,13 +30,26 @@ function BrowsePage() {
         <p className="text-muted">No clubs match your search.</p>
       ) : (
         <Row className="g-4">
-          {filtered.map((club) => (
+          {filtered.map(club => (
             <Col key={club.id} sm={6} lg={4}>
-              <ClubCard {...club} />
+              <ClubCard
+                club={club}
+                isJoined={joinedIds.includes(club.id)}
+                onToggleJoin={onToggleJoin}
+                onViewDetails={setSelectedClub}
+              />
             </Col>
           ))}
         </Row>
       )}
+
+      <ClubDetailModal
+        club={selectedClub}
+        show={!!selectedClub}
+        onHide={() => setSelectedClub(null)}
+        isJoined={selectedClub ? joinedIds.includes(selectedClub.id) : false}
+        onToggleJoin={onToggleJoin}
+      />
     </Container>
   )
 }
