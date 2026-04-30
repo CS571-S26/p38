@@ -1,46 +1,60 @@
 import { useState } from 'react'
-import { Container, Row, Col, Form, InputGroup } from 'react-bootstrap'
+import { Container, Row, Col } from 'react-bootstrap'
 import ClubCard from '../components/ClubCard'
 import ClubDetailModal from '../components/ClubDetailModal'
+import SearchBar from '../components/SearchBar'
+import CategoryFilter from '../components/CategoryFilter'
 
 function BrowsePage({ clubs, joinedIds, onToggleJoin }) {
   const [search, setSearch] = useState('')
+  const [category, setCategory] = useState('All')
   const [selectedClub, setSelectedClub] = useState(null)
 
-  const filtered = clubs.filter(c =>
-    c.name.toLowerCase().includes(search.toLowerCase()) ||
-    c.category.toLowerCase().includes(search.toLowerCase())
-  )
+  const filtered = clubs.filter(c => {
+    const matchesSearch =
+      c.name.toLowerCase().includes(search.toLowerCase()) ||
+      c.category.toLowerCase().includes(search.toLowerCase())
+    const matchesCategory = category === 'All' || c.category === category
+    return matchesSearch && matchesCategory
+  })
 
   return (
     <Container className="py-5">
-      <h2 className="fw-bold mb-1">Browse Clubs</h2>
+      <h1 className="fw-bold mb-1">Browse Clubs</h1>
       <p className="text-muted mb-4">Find your community at UW–Madison</p>
 
-      <InputGroup className="mb-4" style={{ maxWidth: 400 }}>
-        <InputGroup.Text>🔍</InputGroup.Text>
-        <Form.Control
-          placeholder="Search by name or category..."
+      <div className="mb-3">
+        <SearchBar
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={setSearch}
+          placeholder="Search by name or category..."
         />
-      </InputGroup>
+      </div>
+
+      <div className="mb-4">
+        <CategoryFilter selected={category} onSelect={setCategory} />
+      </div>
 
       {filtered.length === 0 ? (
-        <p className="text-muted">No clubs match your search.</p>
+        <p className="text-muted" role="status">No clubs match your search.</p>
       ) : (
-        <Row className="g-4">
-          {filtered.map(club => (
-            <Col key={club.id} sm={6} lg={4}>
-              <ClubCard
-                club={club}
-                isJoined={joinedIds.includes(club.id)}
-                onToggleJoin={onToggleJoin}
-                onViewDetails={setSelectedClub}
-              />
-            </Col>
-          ))}
-        </Row>
+        <>
+          <p className="text-muted small mb-3" role="status">
+            Showing {filtered.length} club{filtered.length !== 1 ? 's' : ''}
+          </p>
+          <Row className="g-4">
+            {filtered.map(club => (
+              <Col key={club.id} sm={6} lg={4}>
+                <ClubCard
+                  club={club}
+                  isJoined={joinedIds.includes(club.id)}
+                  onToggleJoin={onToggleJoin}
+                  onViewDetails={setSelectedClub}
+                />
+              </Col>
+            ))}
+          </Row>
+        </>
       )}
 
       <ClubDetailModal
